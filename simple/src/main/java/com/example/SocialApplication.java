@@ -17,12 +17,28 @@ package com.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @SpringBootApplication
-public class SocialApplication {
+public class SocialApplication extends WebSecurityConfigurerAdapter {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SocialApplication.class, args);
 	}
 
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		// specify a whitelist of permitted endpoints: /, /error, and /webjars/**
+		http.authorizeRequests(a -> a
+					.antMatchers("/", "/error", "/webjars/**").permitAll()
+					.anyRequest().authenticated()
+			)
+			.exceptionHandling(e -> e
+					.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+			)
+			.oauth2Login();
+	}
 }
